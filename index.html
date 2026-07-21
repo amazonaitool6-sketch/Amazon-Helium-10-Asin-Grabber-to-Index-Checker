@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Follow-up Workflow — ASIN Grabber to ChatGPT Listing Copy</title>
+<style>
+  :root {
+    --bg: #F7F6F2;
+    --card: #FFFFFF;
+    --border: #E4E2D9;
+    --text-primary: #1F2937;
+    --text-secondary: #5F5E5A;
+    --orange: #C55A11;
+    --orange-bg: #FAECE7;
+    --orange-text: #712B13;
+    --teal: #0F6E56;
+    --teal-bg: #E1F5EE;
+    --teal-text: #085041;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 60px;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: var(--text-primary);
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 700; color: var(--orange); margin: 0 0 4px; }
+  .subtitle { font-size: 15px; color: var(--text-secondary); margin: 0 0 28px; }
+
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  .toc-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px; }
+  .toc-list { columns: 2; column-gap: 24px; margin: 0; padding: 0; list-style: none; }
+  .toc-list li { margin-bottom: 6px; }
+  .toc-list a { font-size: 13.5px; color: var(--text-primary); text-decoration: none; font-weight: 600; }
+  .toc-list a:hover { color: var(--orange); }
+  .toc-list .toc-desc { display: block; font-size: 12px; color: var(--text-secondary); margin: 1px 0 0; line-height: 1.4; }
+
+  .process {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    scroll-margin-top: 16px;
+  }
+  .process-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge.apply { background: var(--orange-bg); color: var(--orange-text); }
+  .badge.report { background: var(--teal-bg); color: var(--teal-text); }
+  .process-title { font-size: 18px; font-weight: 700; margin: 0; }
+
+  .block { margin-top: 14px; }
+  .block-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin: 0 0 6px;
+  }
+  .where {
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+  ol.steps { margin: 0; padding-left: 20px; }
+  ol.steps li { font-size: 14px; line-height: 1.6; margin-bottom: 4px; }
+  .sample {
+    background: var(--amber-bg);
+    color: var(--amber-text);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .sample b { color: var(--amber-text); }
+
+  .filters {
+    background: var(--teal-bg);
+    color: var(--teal-text);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .filters ul { margin: 0; padding-left: 18px; }
+  .filters li { margin-bottom: 3px; }
+  .filters b { color: var(--teal-text); }
+
+  .flow-arrow {
+    text-align: center;
+    font-size: 20px;
+    color: var(--text-secondary);
+    margin: 6px 0;
+  }
+
+  .section-divider {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: 32px 0 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 600px) {
+    .toc-list { columns: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ASIN Grabber → ChatGPT — Follow-up Workflow</h1>
+  <p class="subtitle">Amazon.co.uk keyword search la irundhu, ChatGPT new title/bullets/backend keywords tharura varaikkum full flow</p>
+
+  <div class="toc">
+    <p class="toc-title">Jump to</p>
+    <ul class="toc-list">
+      <li><a href="#f1">1. Amazon.co.uk Keyword Search</a><span class="toc-desc">Target keyword search pannitu results page open pannurathu</span></li>
+      <li><a href="#f2">2. Xray / ASIN Grabber</a><span class="toc-desc">Extension use panni ASINs grab pannitu BSR base select pannurathu</span></li>
+      <li><a href="#f3">3. Cerebro — Keyword Pull</a><span class="toc-desc">Select panna ASINs vechu keywords pull pannurathu</span></li>
+      <li><a href="#f4">4. Search Volume Filter</a><span class="toc-desc">High to Low sort pannitu best keywords select pannurathu</span></li>
+      <li><a href="#f5">5. Add to List</a><span class="toc-desc">Select panna keywords ah track pannurathukku list la add pannurathu</span></li>
+      <li><a href="#f6">6. ChatGPT — Bullet/Title/Backend</a><span class="toc-desc">ASIN details + Cerebro keyword file kudutha, ChatGPT puthu copy generate pannum</span></li>
+    </ul>
+  </div>
+
+  <div class="section-divider">Full flow — start to finish</div>
+
+  <div class="process" id="f1">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">1. Amazon.co.uk Keyword Search</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Browser la Amazon.co.uk open pannu → search bar la namma target keyword type pannu</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Amazon.co.uk site open pannu</li>
+        <li>Namma product keyword ah search bar la type pannu (e.g. "wall light")</li>
+        <li>Enter click pannu — search results page varum, andha keyword ku top ranking products ella um list aagum</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">Amazon.co.uk la "wall light" nu search pannom → 40+ products list aana search results page open aachu.</p>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↓</div>
+
+  <div class="process" id="f2">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">2. Xray / ASIN Grabber (browser extension)</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Same search results page mela irundhukittu → browser toolbar la irukra Helium 10 extension icon click pannu → ASIN Grabber run pannu</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Helium 10 extension icon ah click pannu</li>
+        <li>ASIN Grabber tool automatic ah search results mela oru data table kaamikkum — ella ASINs um BSR, price, reviews kooda varum</li>
+        <li>BSR (Best Seller Rank) column ah paaru — number low ah irundha, adhu nalla selling product</li>
+        <li>Namma niche ku close ah irukra, nalla BSR rank irukra 3-5 ASINs ah select pannu</li>
+        <li>Select panna ASINs ah note pannu illa export pannu, adhu next step (Cerebro) ku use aagum</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Filters (ASIN Grabber la ivalo paaru)</p>
+      <div class="filters">
+        <ul>
+          <li><b>BSR (Best Seller Rank)</b> — main filter, low number = high selling, adha base pannu select pannu</li>
+          <li><b>Price</b> — namma price range ku close ah irukra products mattum paaka</li>
+          <li><b>Reviews</b> — established, trust irukra products ah confirm pannikka</li>
+        </ul>
+      </div>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">"wall light" search results la irundhu BSR rank base pannitu <b>B0UKASIN01</b> (BSR #120), <b>B0UKASIN02</b> (BSR #340), <b>B0UKASIN03</b> (BSR #510) nu 3 ASINs select pannom.</p>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↓</div>
+
+  <div class="process" id="f3">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">3. Cerebro — Keyword Pull</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Helium 10 dashboard → Tools → Keyword Research → Cerebro</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Cerebro open pannu</li>
+        <li>Step 2 la select panna 3-5 ASINs ah "+ Add Competitor" la paste pannu</li>
+        <li>Get Cerebro Data click pannu</li>
+        <li>Indha ASINs ella um rank aagra keywords full ah oru table la varum</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">3 UK ASINs vechu Cerebro run pannom → "wall light", "led wall light indoor", "modern wall sconce" madhiri 180+ keywords varuthu.</p>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↓</div>
+
+  <div class="process" id="f4">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">4. Search Volume Filter — Keyword Select</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Same Cerebro results table — column header la irukra Search Volume mela click pannu</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Search Volume column ah click pannu — High to Low sort aagum</li>
+        <li>Top ah irukra high-volume keywords ah paaru</li>
+        <li>Relevant ah irukra keywords mattum checkbox tick pannu (irrelevant/brand terms skip pannu)</li>
+        <li>Select panna keywords ah namma final list ku eduthukka ready</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Filters</p>
+      <div class="filters">
+        <ul>
+          <li><b>Search Volume</b> — High to Low sort, top 20-30 keywords mattum focus pannu</li>
+          <li><b>Relevance</b> — namma product ku direct ah match aagra keywords mattum select pannu</li>
+        </ul>
+      </div>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">High to Low sort pannina "led wall light" (8,400/mo), "wall light indoor" (5,200/mo), "modern wall sconce" (3,100/mo) top ah vandhuchu — indha 20 keywords ah select pannom.</p>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↓</div>
+
+  <div class="process" id="f5">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">5. Add to List</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Cerebro results table la, select panna keywords rows mela irukra "Add to List" button click pannu</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Step 4 la select panna keywords ah tick pannitu vechirunthadhu confirm pannu</li>
+        <li>"Add to List" click pannu</li>
+        <li>Puthu list create pannu (e.g. "Wall Light — Master List") illa existing list select pannu</li>
+        <li>Save pannu — indha list ah aprom Keyword Tracker la kooda link pannalam</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Yen idha pannurom</p>
+      <p class="sample">Indha keywords ah oru centralized list la vechirundha, easy ah track pannikkalam, team kooda share pannikkalam, and edhachum keyword miss pogaama irukkum — idhu dhaan "Add to List" ku main reason.</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">20 select panna keywords ah "Wall Light — Master List" nu puthu list create pannitu add pannom — ippo ella keywords um oru place la track aagudhu.</p>
+    </div>
+  </div>
+
+  <div class="flow-arrow">↓</div>
+
+  <div class="process" id="f6">
+    <div class="process-head"><span class="badge apply">Apply</span><h2 class="process-title">6. ChatGPT — New Title / Bullets / Backend Keywords</h2></div>
+    <div class="block">
+      <p class="block-label">Where to go</p>
+      <p class="where">Cerebro la irundhu keyword file export pannu (CSV/copy) → ChatGPT open pannu</p>
+    </div>
+    <div class="block">
+      <p class="block-label">Steps</p>
+      <ol class="steps">
+        <li>Cerebro la select panna keywords ah copy pannu illa CSV ah export pannu</li>
+        <li>Namma ASIN details ready pannu — current title, bullets, category, key features</li>
+        <li>ChatGPT open pannitu, ASIN details um Cerebro keyword file um rendaiyum paste pannu</li>
+        <li>Prompt kudu: "Indha keywords ah use panni, indha product ku oru optimized title, 5 bullet points, backend search terms create pannu"</li>
+        <li>ChatGPT tharra output ah review pannu — irrelevant/false claims edhachum irundha edit pannu</li>
+        <li>Final copy ah Listing Builder illa Scribbles la paste pannitu, ella priority keywords um cover aaguthaa nu confirm pannu</li>
+      </ol>
+    </div>
+    <div class="block">
+      <p class="block-label">Sample</p>
+      <p class="sample">"Wall Light — Master List" (20 keywords) + namma current ASIN title/bullets ah ChatGPT ku kudutha, puthu title + 5 bullets + 15 backend keywords generate aachu — Scribbles la paste pannitu 18/20 keywords cover aaguthu nu confirm pannom.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
