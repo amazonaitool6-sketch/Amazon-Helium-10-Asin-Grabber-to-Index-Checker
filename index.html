@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Helium 10 (Diamond) + Claude MCP — Workflow Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F5F7;--panel:#FFFFFF;--panel-2:#F7F8FA;
+    --line:#E3E6EB;--line-soft:#ECEEF2;
+    --ink:#1B2230;--muted:#5C6472;--muted-2:#8A92A0;
+    --amber:#B87514;--amber-bright:#E9A94B;--amber-soft:#FBF3E4;
+    --good:#1E9E6A;--warn:#B8860B;--bad:#C94A3D;
+    --radius:11px;
+    /* legacy aliases so existing markup keeps working */
+    --navy:var(--amber);--navy-dark:#3a2708;--accent:var(--amber-bright);
+    --card:var(--panel);--border:var(--line);--text:var(--ink);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; padding:0 0 60px;
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px 40px;}
+
+  header.top{background:var(--panel); border-bottom:1px solid var(--line); padding:22px 0 0; margin-bottom:0; position:sticky; top:0; z-index:100;}
+  header.top .inner{max-width:1080px; margin:0 auto; padding:0 20px;}
+  .brand{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .logo{width:38px; height:38px; border-radius:9px; flex:none; background:linear-gradient(135deg,var(--amber-bright),#c98a2f); display:grid; place-items:center; box-shadow:0 4px 14px -6px rgba(184,117,20,.5);}
+  .logo svg{width:22px; height:22px; display:block;}
+  header.top h1{font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:600; letter-spacing:-.01em; margin:0;}
+  header.top p.subtitle{color:var(--muted); font-size:.82rem; margin-top:2px; font-weight:400; opacity:1;}
+  header.top p.subtitle b{color:var(--amber); font-weight:600;}
+  header.top p.desc{display:none;}
+
+  nav.tabs, .tabs{display:flex; gap:2px; margin-top:22px; flex-wrap:wrap; border-bottom:none;}
+  .tab{font-family:'Space Grotesk',sans-serif; background:none; border:none; border-bottom:2px solid transparent; color:var(--muted); padding:11px 18px; cursor:pointer; font-size:.92rem; font-weight:500; transition:.15s; margin-bottom:-1px;}
+  .tab:hover{color:var(--ink);}
+  .tab.active{color:var(--amber); border-bottom-color:var(--amber);}
+  .tab:focus-visible{outline:2px solid var(--amber); outline-offset:-4px; border-radius:4px;}
+
+  .view{display:none;}
+  .view.active{display:block; animation:fade .3s ease; padding-top:28px;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  nav.toc{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 24px; margin:0 0 26px; box-shadow:none;
+  }
+  nav.toc h2{margin:0 0 12px; font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600; font-family:'Space Grotesk',sans-serif;}
+  nav.toc ol{margin:0; padding-left:20px; columns:2; column-gap:40px;}
+  nav.toc li{margin-bottom:10px; font-size:.86rem; break-inside:avoid; padding-left:2px;}
+  nav.toc a{color:var(--amber); text-decoration:none;}
+  nav.toc a:hover{text-decoration:underline;}
+
+  .workflow{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 24px 30px; margin:0 0 22px; box-shadow:none;
+    scroll-margin-top:20px;
+  }
+  .workflow .badge{
+    display:inline-block; background:var(--amber-bright); color:#3a2708; font-size:.68rem;
+    font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:10px;
+    letter-spacing:.05em; text-transform:uppercase; font-family:'Space Grotesk',sans-serif;
+  }
+  .workflow h2{margin:4px 0 4px; font-size:1.15rem; font-weight:600; color:var(--ink); font-family:'Space Grotesk',sans-serif;}
+  .workflow .tool-tag{
+    display:inline-block; font-size:.74rem; color:var(--amber); font-weight:600;
+    background:var(--amber-soft); border:1px solid #F0E2CB; padding:3px 10px; border-radius:20px; margin-bottom:14px;
+  }
+  .workflow .what{color:var(--muted); font-size:.88rem; margin-bottom:16px;}
+
+  h3.section-label{
+    font-family:'Space Grotesk',sans-serif; font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--amber);
+    margin:20px 0 10px; border-bottom:1px solid var(--line); padding-bottom:6px; font-weight:600;
+  }
+
+  ol.steps{margin:0; padding-left:20px;}
+  ol.steps li{margin-bottom:9px; font-size:.88rem; color:var(--ink);}
+  ol.steps li b{color:var(--ink);}
+  ol.steps code, p code, li code{
+    background:var(--amber-soft); padding:1px 6px; border-radius:4px; font-size:.78rem;
+    color:var(--amber); font-family:'IBM Plex Mono',monospace;
+  }
+
+  .prompt-box{
+    background:#2A2416; color:#F3E6CC; padding:16px 18px; border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:.78rem; margin:10px 0 4px;
+    white-space:pre-wrap; line-height:1.6; position:relative;
+  }
+  .prompt-box .label{
+    position:absolute; top:-10px; left:14px; background:var(--amber-bright); color:#3a2708;
+    font-size:.62rem; padding:2px 8px; border-radius:10px; font-family:'Space Grotesk',sans-serif;
+    letter-spacing:.05em; text-transform:uppercase; font-weight:700;
+  }
+
+  table.sample{
+    width:100%; border-collapse:collapse; margin:8px 0 4px; font-size:.8rem;
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  table.sample thead th{
+    background:#2A2416; color:#F3E6CC; text-align:left; padding:9px 10px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; font-size:.68rem; text-transform:uppercase; letter-spacing:.05em;
+  }
+  table.sample tbody td{
+    padding:9px 10px; border-top:1px solid var(--line-soft); vertical-align:top;
+  }
+  table.sample tbody tr:hover{background:var(--panel-2);}
+  .tag{
+    display:inline-block; font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:5px;
+  }
+  .tag.good{background:#E4F5EC; color:var(--good);}
+  .tag.warn{background:var(--amber-soft); color:var(--warn);}
+  .tag.bad{background:#FBEAEA; color:var(--bad);}
+
+  .callout{
+    border-left:3px solid var(--amber-bright); background:var(--amber-soft); padding:12px 16px;
+    border-radius:0 8px 8px 0; font-size:.82rem; margin:14px 0; color:var(--ink);
+  }
+  .callout.finding{border-left-color:var(--warn); background:#FDF7ED;}
+  .callout b{color:var(--ink);}
+
+  .cadence{
+    display:inline-flex; align-items:center; gap:6px; font-size:.76rem; color:var(--muted-2);
+    margin-top:6px;
+  }
+  .cadence .dot{width:8px; height:8px; border-radius:50%; background:var(--amber-bright);}
+
+  .priority-list{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 24px; margin:0 0 22px;
+  }
+  .priority-list h2{color:var(--ink); margin-top:0; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; font-weight:600;}
+  .priority-item{
+    display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line-soft);
+  }
+  .priority-item:last-child{border-bottom:none;}
+  .priority-item .rank{
+    flex:0 0 28px; height:28px; border-radius:50%; background:var(--amber-bright); color:#3a2708;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.78rem;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .priority-item .txt b{color:var(--ink);}
+  .priority-item .txt span{display:block; font-size:.8rem; color:var(--muted); margin-top:2px;}
+
+  footer{
+    text-align:center; color:var(--muted-2); font-size:.76rem; margin-top:36px;
+    padding-top:18px; border-top:1px solid var(--line);
+  }
+
+  .page-break{page-break-before:always;}
+
+  .section-header{
+    background:none; color:var(--ink); padding:0; border-radius:0; margin:0 0 26px;
+    box-shadow:none;
+  }
+  .section-header h2{margin:0 0 4px; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; font-weight:600; color:var(--ink);}
+  .section-header p{margin:0; font-size:.92rem; color:var(--muted); font-weight:400; opacity:1; max-width:660px;}
+
+  table.io{
+    width:100%; border-collapse:collapse; margin:0 0 8px; font-size:.83rem;
+    background:var(--panel); box-shadow:none; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  table.io thead th{
+    background:#2A2416; color:#F3E6CC; text-align:left; padding:11px 14px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;
+  }
+  table.io tbody td{
+    padding:11px 14px; border-top:1px solid var(--line-soft); vertical-align:top;
+  }
+  table.io tbody tr:hover{background:var(--panel-2);}
+  table.io tbody td:first-child{font-weight:600; color:var(--ink); white-space:nowrap;}
+  table.io .tool-num{
+    display:inline-block; background:var(--amber-bright); color:#3a2708; font-size:.68rem; font-weight:700;
+    padding:1px 7px; border-radius:5px; margin-right:6px;
+  }
+  table.io tr.stage-band td{
+    background:var(--amber-soft); border-top:1px solid #F0E2CB; color:var(--amber); font-weight:600; font-size:.72rem;
+    text-transform:uppercase; letter-spacing:.08em; padding:8px 14px; font-family:'Space Grotesk',sans-serif;
+  }
+  table.io td.m-formula{font-family:'IBM Plex Mono',monospace; font-size:.74rem; color:var(--amber);}
+  table.io td.m-formula.na{color:var(--muted-2);}
+
+  .flow-list{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 24px; margin:22px 0 0; box-shadow:none;
+  }
+  .flow-list h2{color:var(--ink); margin-top:0; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; font-weight:600;}
+  .flow-list ol{margin:0; padding-left:22px; columns:2; column-gap:44px;}
+  .flow-list li{margin-bottom:11px; font-size:.85rem; break-inside:avoid; color:var(--ink);}
+  .flow-list li b{color:var(--ink);}
+  .flow-list .ongoing{font-size:.62rem; font-weight:700; color:var(--amber); background:var(--amber-soft); padding:1px 7px; border-radius:5px; margin-left:4px; text-transform:uppercase;}
+
+  @media print{
+    header.top{background:var(--panel) !important; -webkit-print-color-adjust:exact;}
+    .workflow{break-inside:avoid;}
+    table.io tbody tr{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 5h18l-3 7H6L3 5Z" stroke="#3a2708" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 16h8l-1.2 3H9.2L8 16Z" fill="#3a2708"/></svg>
+      </div>
+      <div>
+        <h1>Helium 10 (Diamond)</h1>
+        <p class="subtitle">Workflow Guide &amp; Reference &middot; <b>UK / DE / FR / IT / ES / BE / NL / SE / PL</b></p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="metrics" role="tab">Amazon Metrics Guide</button>
+      <button class="tab" data-view="toolguide" role="tab">Helium 10 — Full Tool Input / Output Guide</button>
+      <button class="tab" data-view="asingrabber" role="tab">ASIN Grabber</button>
+      <button class="tab" data-view="workflows" role="tab">Helium 10 (Diamond) + Claude MCP</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section class="view" id="workflows">
+
+  <p class="ref-intro" style="color:var(--muted);font-size:.92rem;margin:26px 0 20px;max-width:660px;">Eight practical workflows combining Helium 10 Diamond tools with Claude, built for <b style="color:var(--ink);">LEDSone / DCVOLTAGE / SRM Supplies / Homin GmbH</b> Amazon operations.</p>
+
+  <nav class="toc">
+
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#w1">Keyword &amp; Ranking Gap Analysis (Cerebro)</a></li>
+      <li><a href="#w2">Rank Tracking &amp; Drop Alerts (Keyword Tracker)</a></li>
+      <li><a href="#w3">YoY / Periodic Sales Drop Analysis</a></li>
+      <li><a href="#w4">PPC Optimization (Adtomic)</a></li>
+      <li><a href="#w5">ACoS Spike Root Cause Analysis</a></li>
+      <li><a href="#w6">Competitor &amp; Market Monitoring (Market Tracker)</a></li>
+      <li><a href="#w7">Alerts Consolidation (Daily/Weekly Digest)</a></li>
+      <li><a href="#w8">Client Monthly Reporting</a></li>
+    </ol>
+  </nav>
+
+  <!-- WORKFLOW 1 -->
+  <section class="workflow" id="w1">
+    <span class="badge">Workflow 1</span>
+    <h2>Keyword &amp; Ranking Gap Analysis</h2>
+    <span class="tool-tag">Tool: Cerebro</span>
+    <p class="what">Pull competitor ASIN keywords and identify gaps in your own listings — keywords they rank for that you don't.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Give Claude your own ASIN via Helium 10 MCP and ask it to find the top 2-3 competitor ASINs in the <b>same marketplace</b> (using Cerebro/Xray data — same category, similar price range, similar BSR)</li>
+      <li>List your ASIN + top 2-3 competitor ASINs (<b>same marketplace</b> — keep all comparisons within UK)</li>
+      <li>Prompt Claude using Cerebro to compare all ASINs' keyword sets</li>
+      <li>Claude pulls: every keyword, rank position per ASIN, search volume</li>
+      <li>Output split into 3 buckets — <i>our advantage</i>, <i>gap/opportunity</i>, <i>shared</i></li>
+      <li>From the gap bucket, prioritize high volume + low-medium competition</li>
+      <li>Ready-to-use list handed off for backend search terms / PPC campaigns</li>
+    </ol>
+
+    <h3 class="section-label">Sample Prompt — Finding Competitors (ASIN + Main Image)</h3>
+    <div class="prompt-box"><span class="label">Prompt</span>My ASIN is B0B8DWXLQ2 (UK marketplace). Here is my product's main image
+[attach image]. Using Helium 10 MCP, find the top 2-3 competitor ASINs
+in the same marketplace and same category — similar price range and
+similar BSR. List their ASIN, title, price, BSR, and main image link,
+so I can visually compare them against my product image.</div>
+    <div class="callout"><b>Note:</b> Helium 10 doesn't do image-recognition matching — it finds "likely" competitors using category, price, and BSR data. You still need to manually check each suggested ASIN's image against yours to confirm it's a true match.</div>
+
+    <h3 class="section-label">Sample Prompt</h3>
+    <div class="prompt-box"><span class="label">Prompt</span>Using Cerebro, pull all ranking keywords for ASIN B0B8DWXLQ2 (UK marketplace)
+and compare against competitor ASINs B0029MCTJ2 and B0C4XXTS21 in the
+same marketplace. Show me keywords they rank for that I don't, sorted
+by search volume descending. Include volume and competition level.</div>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Keyword</th><th>Volume</th><th>Competition</th><th>Our Rank</th><th>Competitor Rank</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>ceiling rose white</td><td>595</td><td><span class="tag good">Low</span></td><td>Not ranking</td><td>#8</td><td>Add to backend + PPC</td></tr>
+        <tr><td>lamp canopy white</td><td>630</td><td><span class="tag warn">Medium</span></td><td>Not ranking</td><td>#14</td><td>Add to backend</td></tr>
+        <tr><td>ceiling canopy cover white</td><td>453</td><td><span class="tag good">Low</span></td><td>Not ranking</td><td>#5</td><td>Add + monitor exact-match PPC</td></tr>
+        <tr><td>e27 bulb holder black</td><td>1,240</td><td><span class="tag bad">High</span></td><td>#41</td><td>#3</td><td>Long-term — improve listing content first</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Note:</b> Marketplace data is never mixed — since this guide is UK-focused, keep every competitor comparison within the UK marketplace only.</div>
+  </section>
+
+  <!-- WORKFLOW 2 -->
+  <section class="workflow" id="w2">
+    <span class="badge">Workflow 2</span>
+    <h2>Rank Tracking &amp; Drop Alerts</h2>
+    <span class="tool-tag">Tool: Keyword Tracker</span>
+    <p class="what">Track daily/weekly rank movement of core tracked keywords and flag drops immediately, before they turn into a sales problem.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Add top 10-15 core keywords per ASIN to Keyword Tracker (if not already tracking)</li>
+      <li>Weekly, ask Claude to pull rank history for the last 7 days</li>
+      <li>Claude compares week-over-week rank change</li>
+      <li>Set a threshold — e.g. <b>10+ position drop</b> = flagged as alert</li>
+      <li>Quick root-cause check: PPC paused? Price change? New competitor entry?</li>
+      <li>Weekly summary — which keywords dropped, likely reason, likely fix</li>
+    </ol>
+
+    <h3 class="section-label">Sample Prompt</h3>
+    <div class="prompt-box"><span class="label">Prompt</span>Pull rank history for our UK tracked keywords over the last 7 days.
+Flag any keyword that dropped 10+ positions, and for each flagged one
+check if PPC spend, price, or listing content changed recently.</div>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Keyword</th><th>ASIN</th><th>Last Week</th><th>This Week</th><th>Change</th><th>Probable Cause</th></tr></thead>
+      <tbody>
+        <tr><td>led strip lights 5m</td><td>B0912XXTS9</td><td>#6</td><td>#23</td><td style="color:var(--bad); font-weight:700;">▼17</td><td>PPC campaign paused 5 days ago</td></tr>
+        <tr><td>motion sensor light outdoor</td><td>B0912YYP31</td><td>#4</td><td>#4</td><td style="color:var(--good); font-weight:700;">—</td><td>Stable, no action</td></tr>
+        <tr><td>rgb led controller</td><td>B0745MMK22</td><td>#11</td><td>#29</td><td style="color:var(--bad); font-weight:700;">▼18</td><td>New competitor entered top 10, 40% lower price</td></tr>
+      </tbody>
+    </table>
+    <p class="cadence"><span class="dot"></span>Cadence: run every Monday morning</p>
+  </section>
+
+  <!-- WORKFLOW 3 -->
+  <section class="workflow" id="w3">
+    <span class="badge">Workflow 3 · Already in motion</span>
+    <h2>YoY / Periodic Sales Drop Analysis</h2>
+    <span class="tool-tag">Tools: Cerebro + Keyword Tracker + Helium 10 MCP</span>
+    <p class="what">You've already built the 265-ASIN version of this. This turns it into a standard recurring monthly process.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>At month start, export current month vs same month last year sales (Seller/Vendor Central)</li>
+      <li>Attach the file to Claude: Marketplace, ASIN, Units this year, Units last year</li>
+      <li>Claude filters "SALES DROP" ASINs using the established rule set</li>
+      <li>Batch-wise (10-15 ASINs at a time) — pull keyword rank, competitor data, opportunity keywords</li>
+      <li>Track Helium 10 call budget as you go</li>
+      <li>Final consolidated table + a "Key Findings" summary (price issue vs keyword issue)</li>
+      <li>Ready for the team review meeting</li>
+    </ol>
+
+    <h3 class="section-label">Root Cause Rules</h3>
+    <table class="sample">
+      <thead><tr><th>Condition (from bulk data)</th><th>Root Cause Tag</th></tr></thead>
+      <tbody>
+        <tr><td>Sessions down + Units down (proportional)</td><td><span class="tag bad">Traffic / ranking loss</span></td></tr>
+        <tr><td>Sessions stable + Units down</td><td><span class="tag warn">Conversion loss (listing/price)</span></td></tr>
+        <tr><td>Ad spend down sharply + Sessions down</td><td><span class="tag warn">PPC stopped / budget exhausted</span></td></tr>
+        <tr><td>Everything stable, Units down only</td><td><span class="tag bad">Stock / Buy Box issue</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="section-label">Sample Output Row</h3>
+    <table class="sample">
+      <thead><tr><th>ASIN</th><th>MP</th><th>Units '25</th><th>Units '26</th><th>Drop Reason</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>B0B8DWXLQ2</td><td>DE</td><td>21</td><td>6</td><td>Price 3x higher than top competitor (€9 vs €2.97)</td><td>Reduce to €3–5 range + add 4 opportunity keywords</td></tr>
+      </tbody>
+    </table>
+    <p class="cadence"><span class="dot"></span>Cadence: monthly, first week of the month</p>
+  </section>
+
+  <!-- WORKFLOW 4 -->
+  <section class="workflow" id="w4">
+    <span class="badge">Workflow 4 · Top priority</span>
+    <h2>PPC Optimization</h2>
+    <span class="tool-tag">Tool: Adtomic</span>
+    <p class="what">Feed Adtomic performance data to Claude to spot underperforming campaigns and reallocate budget.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Export campaign performance from Adtomic: spend, ACoS, sales, impressions, clicks</li>
+      <li>Ask Claude to identify high-ACoS/low-sales campaigns from the last 30 days</li>
+      <li>Claude classifies each campaign into cut/increase/watch</li>
+      <li>Specific action per campaign: bid adjustment %, budget change, negative keywords</li>
+      <li>Table ready for team approval before execution</li>
+    </ol>
+
+    <h3 class="section-label">Sample Prompt</h3>
+    <div class="prompt-box"><span class="label">Prompt</span>Here is our last 30 days Adtomic campaign export. Identify campaigns
+with ACoS above 40% and sales below target, and separately identify
+efficient campaigns (ACoS under 15%) that are budget-capped. Give me
+a specific bid/budget action per campaign.</div>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Campaign</th><th>Spend</th><th>ACoS</th><th>Sales</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>UK_LED_Strip_Auto</td><td>£412</td><td>58%</td><td>£710</td><td><span class="tag bad">Cut</span></td><td>Pause 3 wasted search terms, cut budget 30%</td></tr>
+        <tr><td>DE_Motion_Sensor_Exact</td><td>€180</td><td>11%</td><td>€1,636</td><td><span class="tag good">Scale</span></td><td>Budget-capped daily — increase budget +40%</td></tr>
+        <tr><td>FR_RGB_Controller_Broad</td><td>€95</td><td>22%</td><td>€432</td><td><span class="tag warn">Watch</span></td><td>New campaign, 2 weeks old — hold</td></tr>
+      </tbody>
+    </table>
+    <p class="cadence"><span class="dot"></span>Cadence: weekly review, monthly deep dive</p>
+  </section>
+
+  <!-- WORKFLOW 5 -->
+  <section class="workflow" id="w5">
+    <span class="badge">Workflow 5</span>
+    <h2>ACoS Spike Root Cause Analysis</h2>
+    <span class="tool-tag">Tool: Adtomic</span>
+    <p class="what">When one campaign suddenly spikes in ACoS, get an automatic diagnosis instead of manually digging through the console.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Identify the spiking campaign/ASIN (Adtomic alert or manual scan)</li>
+      <li>Ask Claude to pull the last 14 days trend: spend, clicks, conversion rate, CPC</li>
+      <li>Claude checks 4 likely causes — CPC rise, conversion drop, irrelevant search terms, early budget exhaustion</li>
+      <li>Get one specific fix tied to the actual cause found</li>
+    </ol>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Campaign</th><th>Cause</th><th>Evidence</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>UK_Outdoor_Light_Auto</td><td>Irrelevant search terms</td><td>34% of spend on "solar garden statue" — 0 conversions</td><td>Add 6 negative keywords, review search term report weekly</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- WORKFLOW 6 -->
+  <section class="workflow" id="w6">
+    <span class="badge">Workflow 6</span>
+    <h2>Competitor &amp; Market Monitoring</h2>
+    <span class="tool-tag">Tool: Market Tracker</span>
+    <p class="what">Track competitor price moves and market trend shifts before they eat into your sales.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Add 3-5 core competitors per category to Market Tracker</li>
+      <li>Weekly/bi-weekly, ask Claude to pull competitor price and BSR changes (last 7-14 days)</li>
+      <li>Claude flags significant changes: 10%+ price drop, BSR jump, new listing entry</li>
+      <li>Quick assessment of impact on our pricing strategy</li>
+    </ol>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Competitor ASIN</th><th>Change</th><th>Impact on Us</th><th>Suggested Response</th></tr></thead>
+      <tbody>
+        <tr><td>B0C4XXTS21</td><td>Price dropped 22%</td><td>High — direct competitor, same keywords</td><td>Match with a smaller 10% drop + push a coupon instead of full price cut</td></tr>
+      </tbody>
+    </table>
+    <p class="cadence"><span class="dot"></span>Cadence: bi-weekly</p>
+  </section>
+
+  <!-- WORKFLOW 7 -->
+  <section class="workflow" id="w7">
+    <span class="badge">Workflow 7</span>
+    <h2>Alerts Consolidation</h2>
+    <span class="tool-tag">Tool: Helium 10 Alerts</span>
+    <p class="what">Buy Box loss, hijacks, review drops — instead of chasing separate notifications, get one prioritized daily/weekly digest.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Confirm notifications are enabled for all ASINs in Helium 10 Alerts</li>
+      <li>Feed raw alerts to Claude daily/weekly</li>
+      <li>Claude classifies by priority — Urgent / Medium / Low</li>
+      <li>Single digest, ready to paste into team chat or email</li>
+    </ol>
+
+    <h3 class="section-label">Sample Output</h3>
+    <table class="sample">
+      <thead><tr><th>Priority</th><th>Issue</th><th>ASIN</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag bad">Urgent</span></td><td>Buy Box lost</td><td>B0912XXTS9</td><td>Check pricing/stock immediately — new seller undercutting</td></tr>
+        <tr><td><span class="tag warn">Medium</span></td><td>Review rating dropped 4.6→4.3</td><td>B0745MMK22</td><td>Read last 5 reviews, check for a QC issue</td></tr>
+        <tr><td><span class="tag good">Low</span></td><td>Minor rank fluctuation</td><td>B0912YYP31</td><td>Monitor only</td></tr>
+      </tbody>
+    </table>
+    <p class="cadence"><span class="dot"></span>Cadence: daily scan, weekly consolidated digest</p>
+  </section>
+
+  <!-- WORKFLOW 8 -->
+  <section class="workflow" id="w8">
+    <span class="badge">Workflow 8</span>
+    <h2>Client Monthly Reporting</h2>
+    <span class="tool-tag">Clients: LEDSone · DCVOLTAGE · SRM Supplies · Homin GmbH</span>
+    <p class="what">Auto-generate a clean, client-facing monthly performance report.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>At month end, pull Helium 10 + Seller Central data (sales, ACoS, top ASINs, issues faced)</li>
+      <li>Give Claude the report template/structure to follow</li>
+      <li>Sections: Sales summary, Top/bottom ASINs, PPC performance, Issues resolved, Next month plan</li>
+      <li>Export as DOCX/PDF, client-facing formal English</li>
+    </ol>
+    <div class="callout finding"><b>Tip:</b> Keep this template identical every month per client — makes month-over-month comparison easy for the MD and the client both.</div>
+    <p class="cadence"><span class="dot"></span>Cadence: monthly, last working day</p>
+  </section>
+
+  <div class="priority-list">
+    <h2>Suggested Priority Order</h2>
+    <div class="priority-item"><div class="rank">1</div><div class="txt"><b>PPC / Adtomic (Workflow 4)</b><span>Already your primary tool — immediate ROI</span></div></div>
+    <div class="priority-item"><div class="rank">2</div><div class="txt"><b>YoY Sales Drop (Workflow 3)</b><span>Already in motion — just make it recurring monthly</span></div></div>
+    <div class="priority-item"><div class="rank">3</div><div class="txt"><b>Cerebro Gap Analysis (Workflow 1)</b><span>High value, currently underutilised tool</span></div></div>
+    <div class="priority-item"><div class="rank">4</div><div class="txt"><b>Alerts Digest (Workflow 7)</b><span>Saves daily manual monitoring time</span></div></div>
+    <div class="priority-item"><div class="rank">5</div><div class="txt"><b>Remaining (2, 5, 6, 8)</b><span>Build once the top four are stable and running smoothly</span></div></div>
+  </div>
+
+</section>
+
+<!-- ============ TOOL INPUT / OUTPUT GUIDE ============ -->
+<section class="view" id="toolguide">
+
+  <div class="section-header">
+    <h2>Helium 10 — Full Tool Input / Output Guide</h2>
+    <p>Tools 0 through 14 — what you feed in, and what you get out</p>
+  </div>
+
+  <table class="io">
+    <thead>
+      <tr><th style="width:20%">Tool</th><th style="width:38%">Input</th><th style="width:42%">Output</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tool-num">0</span>Xray / ASIN Grabber</td>
+        <td>Search main keyword on Amazon + click Xray extension icon</td>
+        <td>Table of competitor ASINs with Price, Sales, Reviews. Identifies 3-5 closest competitor ASINs (feeds into Cerebro).</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">1</span>Cerebro</td>
+        <td>Our ASIN + competitor ASINs from Step 0 (up to 8)</td>
+        <td>Raw keyword list with Search Volume and competitor rank data (green = we rank, gray = we don't). Identifies keywords we're missing.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">1b</span>Frankenstein</td>
+        <td>Raw keyword list exported from Cerebro</td>
+        <td>Clean, duplicate-free, restricted-word-free keyword list — ready for Listing Builder / Scribbles.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">2</span>Keyword Tracker</td>
+        <td>ASIN + priority keywords (set Daily/Weekly tracking)</td>
+        <td>Per-keyword rank trend graph over time — tracks whether rank is improving or dropping.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">3</span>Index Checker</td>
+        <td>ASIN + Marketplace + priority keyword list</td>
+        <td>Traditional / Field-ASIN / Storefront Index status (check or cross) + Cumulative verdict. Identifies keywords that are NOT indexed.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">4</span>Search Query Analyzer</td>
+        <td>Seller Central account connected + ASIN + Marketplace + Date range</td>
+        <td>Search Volume, Your Click Share %, Your Conversion Share % vs category average. Identifies visibility/conversion gaps.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">5</span>Listing Analyzer</td>
+        <td>ASIN (click Analyze)</td>
+        <td>Listing Quality Score (0-10) + section-by-section checklist (Title, Bullets, Images, Description, Reviews). Identifies what's missing.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">6</span>Listing Builder</td>
+        <td>ASIN (Import from Amazon) + keyword bank from Find Keywords</td>
+        <td>Fresh Title + 5 Bullet Points + Description + Backend Search Terms — a publish-ready draft.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">7</span>Scribbles</td>
+        <td>Keyword bank + listing content (Title/Bullets/Description, imported or typed)</td>
+        <td>Live red-to-green keyword tracking + coverage percentage. Verifies every priority keyword is used; final polished copy.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">9</span>Xray (market comparison)</td>
+        <td>Main keyword searched weekly + Xray extension</td>
+        <td>Our ASIN vs top 5 competitors: price / review / sales gaps. Tracks weekly competitor movement.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">10</span>Market Tracker</td>
+        <td>Niche/Category (auto-detect or manual) + date range</td>
+        <td>Market share % trend month-over-month. Tracks share gained or lost vs competitors.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">11</span>Adtomic</td>
+        <td>Amazon Ads account connected + campaign selected</td>
+        <td>Search Term Report showing high-spend/low-conversion terms. Identifies PPC waste to negative out.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">12</span>Alerts</td>
+        <td>ASIN added + alert types enabled (Hijacker, Buy Box, Price, Review)</td>
+        <td>Real-time email/dashboard notification the moment an unauthorized change happens.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">13</span>Profits</td>
+        <td>Seller Central connected + date range</td>
+        <td>Net Profit / Margin % per ASIN with fee and ad-spend breakdown. Identifies low-margin ASINs.</td>
+      </tr>
+      <tr>
+        <td><span class="tool-num">14</span>Black Box</td>
+        <td>Filters: Category, Price, Monthly Sales, Reviews, Rating</td>
+        <td>Opportunity-Score-sorted product list — new product launch candidates.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="flow-list">
+    <h2>Full Workflow Order</h2>
+    <ol>
+      <li><b>Xray</b> → find competitor ASINs</li>
+      <li><b>Cerebro</b> → find keywords</li>
+      <li><b>Frankenstein</b> → clean keywords</li>
+      <li><b>Keyword Tracker</b> → monitor rank <span class="ongoing">ongoing</span></li>
+      <li><b>Index Checker</b> → check indexed status</li>
+      <li><b>Search Query Analyzer</b> → check visibility/conversion</li>
+      <li><b>Listing Analyzer</b> → identify weaknesses</li>
+      <li><b>Listing Builder</b> → create new content</li>
+      <li><b>Scribbles</b> → verify keyword coverage</li>
+      <li><b>Xray (market)</b> → weekly competitor watch <span class="ongoing">ongoing</span></li>
+      <li><b>Market Tracker</b> → market share watch <span class="ongoing">ongoing</span></li>
+      <li><b>Adtomic</b> → optimize PPC <span class="ongoing">ongoing</span></li>
+      <li><b>Alerts</b> → protect account <span class="ongoing">ongoing</span></li>
+      <li><b>Profits</b> → check profitability <span class="ongoing">ongoing</span></li>
+      <li><b>Black Box</b> → research new products</li>
+    </ol>
+  </div>
+
+</section>
+
+<!-- ============ ASIN GRABBER WORKFLOW ============ -->
+<section class="view" id="asingrabber">
+
+  <p class="ref-intro" style="color:var(--muted);font-size:.92rem;margin:26px 0 20px;max-width:660px;">Complete flow starting from Amazon.co.uk keyword search, all the way to ChatGPT generating a new title / bullets / backend keywords.</p>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#ag1">1. Amazon.co.uk Keyword Search</a></li>
+      <li><a href="#ag2">2. Xray / ASIN Grabber</a></li>
+      <li><a href="#ag3">3. Cerebro — Keyword Pull</a></li>
+      <li><a href="#ag4">4. Search Volume Filter</a></li>
+      <li><a href="#ag5">5. Add to List</a></li>
+      <li><a href="#ag6">6. ChatGPT — Bullet / Title / Backend</a></li>
+    </ol>
+  </nav>
+
+  <!-- STEP 1 -->
+  <section class="workflow" id="ag1">
+    <span class="badge">Step 1</span>
+    <h2>Amazon.co.uk Keyword Search</h2>
+    <span class="tool-tag">Where: Amazon.co.uk</span>
+    <p class="what">Open Amazon.co.uk in the browser and type your target keyword in the search bar.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Open the Amazon.co.uk site</li>
+      <li>Type your product keyword in the search bar (e.g. "wall light")</li>
+      <li>Click Enter — the search results page appears, listing all top ranking products for that keyword</li>
+    </ol>
+
+    <div class="callout">We searched "wall light" on Amazon.co.uk → a search results page with 40+ products opened up.</div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="workflow" id="ag2">
+    <span class="badge">Step 2</span>
+    <h2>Xray / ASIN Grabber</h2>
+    <span class="tool-tag">Tool: Helium 10 browser extension</span>
+    <p class="what">Stay on the same search results page, then run ASIN Grabber to pull BSR, price, and review data for every listed ASIN.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Click the Helium 10 extension icon in the browser toolbar</li>
+      <li>ASIN Grabber automatically overlays a data table on the search results — showing every ASIN's BSR, price, and reviews</li>
+      <li>Check the BSR (Best Seller Rank) column — the lower the number, the better the product sells</li>
+      <li>Select 3-5 ASINs that are close to your niche and have a good BSR rank</li>
+      <li>Note down or export the selected ASINs — these will be used in the next step (Cerebro)</li>
+    </ol>
+
+    <h3 class="section-label">Filters to check</h3>
+    <table class="sample">
+      <thead><tr><th>Filter</th><th>What it tells you</th></tr></thead>
+      <tbody>
+        <tr><td>BSR (Best Seller Rank)</td><td>Main filter — low number = high selling, select based on this</td></tr>
+        <tr><td>Price</td><td>Only consider products close to your price range</td></tr>
+        <tr><td>Reviews</td><td>Confirms the products are established and trusted</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">Based on BSR rank from the "wall light" search results, we selected 3 ASINs: <b>B0UKASIN01</b> (BSR #120), <b>B0UKASIN02</b> (BSR #340), <b>B0UKASIN03</b> (BSR #510).</div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="workflow" id="ag3">
+    <span class="badge">Step 3</span>
+    <h2>Cerebro — Keyword Pull</h2>
+    <span class="tool-tag">Tool: Cerebro</span>
+    <p class="what">Use the selected ASINs as competitors in Cerebro to pull every keyword they rank for.</p>
+
+    <h3 class="section-label">Where to go</h3>
+    <p style="font-size:.88rem;color:var(--ink);margin-bottom:14px;">Helium 10 dashboard → Tools → Keyword Research → Cerebro</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Open Cerebro</li>
+      <li>Paste the 3-5 ASINs selected in Step 2 into "+ Add Competitor"</li>
+      <li>Click Get Cerebro Data</li>
+      <li>You'll get a full table of all keywords these ASINs rank for</li>
+    </ol>
+
+    <div class="callout">We ran Cerebro with 3 UK ASINs → got 180+ keywords like "wall light", "led wall light indoor", "modern wall sconce".</div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="workflow" id="ag4">
+    <span class="badge">Step 4</span>
+    <h2>Search Volume Filter — Keyword Selection</h2>
+    <span class="tool-tag">Tool: Cerebro results table</span>
+    <p class="what">Sort by Search Volume High to Low and select the keywords most relevant to your product.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Click on the Search Volume column — this sorts the results High to Low</li>
+      <li>Review the high-volume keywords at the top</li>
+      <li>Tick the checkbox only for relevant keywords (skip irrelevant/brand terms)</li>
+      <li>The selected keywords are now ready to be added to the final list</li>
+    </ol>
+
+    <h3 class="section-label">Filters</h3>
+    <table class="sample">
+      <thead><tr><th>Filter</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td>Search Volume</td><td>Sort High to Low, focus only on the top 20-30 keywords</td></tr>
+        <tr><td>Relevance</td><td>Select only keywords that directly match your product</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">After sorting High to Low, "led wall light" (8,400/mo), "wall light indoor" (5,200/mo), "modern wall sconce" (3,100/mo) came up on top — we selected these 20 keywords.</div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="workflow" id="ag5">
+    <span class="badge">Step 5</span>
+    <h2>Add to List</h2>
+    <span class="tool-tag">Tool: Cerebro results table</span>
+    <p class="what">Save the selected keywords into a centralized list so they can be tracked and shared.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Confirm the keywords you ticked in Step 4 are still selected</li>
+      <li>Click "Add to List"</li>
+      <li>Create a new list (e.g. "Wall Light — Master List") or select an existing one</li>
+      <li>Save — this list can later also be linked to Keyword Tracker</li>
+    </ol>
+
+    <div class="callout"><b>Why we do this:</b> Keeping these keywords in one centralized list makes it easy to track them, share with the team, and ensures no keyword gets missed.</div>
+
+    <p style="font-size:.86rem;color:var(--muted);margin-top:12px;">Sample: We created a new list called "Wall Light — Master List" and added the 20 selected keywords to it — now all keywords are tracked in one place.</p>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="workflow" id="ag6">
+    <span class="badge">Step 6</span>
+    <h2>ChatGPT — New Title / Bullets / Backend Keywords</h2>
+    <span class="tool-tag">Tool: ChatGPT</span>
+    <p class="what">Feed ChatGPT the ASIN details and the Cerebro keyword file to generate optimized listing copy.</p>
+
+    <h3 class="section-label">Steps</h3>
+    <ol class="steps">
+      <li>Copy the selected keywords from Cerebro or export as CSV</li>
+      <li>Prepare your ASIN details — current title, bullets, category, key features</li>
+      <li>Open ChatGPT and paste both the ASIN details and the Cerebro keyword file</li>
+      <li>Give the prompt below</li>
+      <li>Review the output ChatGPT gives — edit if there are any irrelevant/false claims</li>
+      <li>Paste the final copy into Listing Builder or Scribbles, and confirm all priority keywords are covered</li>
+    </ol>
+
+    <h3 class="section-label">Sample Prompt</h3>
+    <div class="prompt-box"><span class="label">Prompt</span>Using these keywords, create an optimized title, 5 bullet points,
+and backend search terms for this product.</div>
+
+    <div class="callout">We gave ChatGPT the "Wall Light — Master List" (20 keywords) plus our current ASIN title/bullets — it generated a new title + 5 bullets + 15 backend keywords. We pasted it into Scribbles and confirmed 18/20 keywords were covered.</div>
+  </section>
+
+</section>
+
+<!-- ============ METRICS GUIDE ============ -->
+<section class="view active" id="metrics">
+
+  <div class="section-header">
+    <h2>Amazon Metrics Guide</h2>
+    <p>In funnel order — Metric, Formula, Meaning, Objective</p>
+  </div>
+
+  <table class="io">
+    <thead>
+      <tr><th style="width:16%">Metric</th><th style="width:20%">Formula</th><th style="width:44%">Meaning</th><th style="width:20%">Objective</th></tr>
+    </thead>
+    <tbody>
+      <tr class="stage-band"><td colspan="4">Top — Visibility</td></tr>
+      <tr><td>Impressions</td><td class="m-formula na">—</td><td>Count of <b>how many times</b> your product/ad appeared on a customer's screen. No click, no purchase — just visibility.</td><td>Confirms keyword ranking and reach are healthy.</td></tr>
+      <tr><td>Clicks</td><td class="m-formula na">—</td><td>Out of the impressions, how many times a customer <b>clicked in</b>. The next step in the funnel.</td><td>Checks if the main image, title, and price are attracting attention.</td></tr>
+      <tr><td>CTR</td><td class="m-formula">Clicks / Impressions x 100</td><td>Out of 100 impressions, what % turned into a click. <b>Low CTR means the title/image is weak</b>.</td><td>Measures how strong the listing's hook is.</td></tr>
+
+      <tr class="stage-band"><td colspan="4">Mid — Traffic</td></tr>
+      <tr><td>Sessions</td><td class="m-formula na">—</td><td>One customer visit to the page = 1 session. Even if <b>the same customer</b> returns multiple times within 24hrs, it still counts as 1 session.</td><td>Shows how many real customers are actually viewing.</td></tr>
+      <tr><td>Page Views</td><td class="m-formula na">—</td><td>Number of times the page loaded. If the same customer refreshes 5 times, that's 5 page views but still <b>1 session</b>.</td><td>Helps compare interest levels.</td></tr>
+      <tr><td>Buy Box %</td><td class="m-formula na">—</td><td>When other sellers list the same product, they compete for who gets the "Add to Cart" click. The % you're winning.</td><td>No Buy Box means no sale — direct impact.</td></tr>
+
+      <tr class="stage-band"><td colspan="4">Bottom — Conversion</td></tr>
+      <tr><td>Units Ordered</td><td class="m-formula na">—</td><td>Total count of <b>pieces/units</b> ordered.</td><td>Tracks volume.</td></tr>
+      <tr><td>Conversion Rate</td><td class="m-formula">Units / Sessions x 100</td><td>Amazon calls this <b>"Unit Session Percentage"</b>. Out of 100 customers who visit, how many actually buy. <b>Most important metric</b>.</td><td>Reflects listing + price + review health. Good = 10-15%.</td></tr>
+      <tr><td>Ordered Product Sales</td><td class="m-formula">Units x Price</td><td>Total <b>revenue</b> generated in that period.</td><td>Tracks top-line sales.</td></tr>
+
+      <tr class="stage-band"><td colspan="4">Ads — PPC</td></tr>
+      <tr><td>CPC</td><td class="m-formula">Ad Spend / Clicks</td><td>The <b>cost</b> incurred per ad click.</td><td>Checks bid efficiency.</td></tr>
+      <tr><td>ACOS</td><td class="m-formula">Ad Spend / Ad Sales x 100</td><td>What % of ad sales went to ad spend. <b>Lower = more profit</b>.</td><td>Controls PPC profitability.</td></tr>
+      <tr><td>TACOS</td><td class="m-formula">Ad Spend / Total Sales x 100</td><td>Ad cost as a share of <b>total</b> sales. A long-term health metric.</td><td>Reflects overall business health — matters most long term.</td></tr>
+      <tr><td>ROAS</td><td class="m-formula">Ad Sales / Ad Spend</td><td>The <b>return</b> earned per unit spent on ads. Opposite of ACOS.</td><td>Quick way to check ad returns.</td></tr>
+
+      <tr class="stage-band"><td colspan="4">SEO & Health</td></tr>
+      <tr><td>Organic Rank</td><td class="m-formula na">—</td><td>The <b>position</b> your product appears at when the keyword is searched (without ads). Page 1 is the target.</td><td>Confirms whether SEO effort is working.</td></tr>
+      <tr><td>Search Frequency Rank</td><td class="m-formula na">—</td><td>Found in Brand Analytics. <b>A smaller number means higher search volume</b>.</td><td>Helps decide which keywords to target.</td></tr>
+      <tr><td>Index Check</td><td class="m-formula na">—</td><td>Whether the product shows up in search for a given keyword. If not indexed, it can't rank.</td><td>Fixes keywords you're missing out on.</td></tr>
+      <tr><td>Return Rate</td><td class="m-formula">Returns / Units x 100</td><td>The % of products <b>returned</b>. High rate signals a quality or expectation problem.</td><td>A signal of product + listing quality.</td></tr>
+    </tbody>
+  </table>
+
+</section>
+
+  <footer>Prepared for VaRnaN — Amazon Department Head, Digitweb Lanka</footer>
+</div>
+
+<script>
+  const tabs=document.querySelectorAll('.tab'), views=document.querySelectorAll('.view');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    views.forEach(v=>v.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.view).classList.add('active');
+  }));
+</script>
+
+</body>
+</html>
